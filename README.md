@@ -11,7 +11,21 @@ https://github.com/Cutwell/garmin-celestial-watchface/assets/22395357/04fb5358-5
 
 ## Install
 
-Follow the instructions for side-loading a watchface from the [Garmin website](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#sideloadinganapp).
+### For supported watches
+
+**Forerunner 45:**
+
+1. Install the latest release tagged `fr-45` from the [release page](https://github.com/Cutwell/garmin-celestial-watchface/releases).
+
+2. Connect your watch to a PC, and copy-paste `celestial.prg` into the `GARMIN/APPS` directory.
+
+### For unsupported watches
+
+1. Clone this repository locally.
+
+2. Follow the [Getting Started](https://developer.garmin.com/connect-iq/connect-iq-basics/getting-started/) page to install Monkey C and VSCode development extensions.
+
+2. Follow the instructions for building + side-loading a watchface from the [Garmin website](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#sideloadinganapp).
 
 ## Contributing
 
