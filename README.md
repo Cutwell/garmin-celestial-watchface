@@ -7,6 +7,8 @@
 - Turns your watchface into a day/night cycle.
 - Uses your current position and predicts sunset / sunrise times.
 
+https://github.com/Cutwell/garmin-celestial-watchface/assets/22395357/04fb5358-5b83-4e04-8fd4-7fb4eac99061
+
 ## Install
 
 Follow the instructions for side-loading a watchface from the [Garmin website](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#sideloadinganapp).
