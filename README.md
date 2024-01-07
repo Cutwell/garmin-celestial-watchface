@@ -15,7 +15,7 @@ https://github.com/Cutwell/garmin-celestial-watchface/assets/22395357/04fb5358-5
 
 **Forerunner 45:**
 
-1. Install the latest release tagged `fr-45` from the [release page](https://github.com/Cutwell/garmin-celestial-watchface/releases).
+1. Install the latest release tagged `fr-45-vX.X` from the [release page](https://github.com/Cutwell/garmin-celestial-watchface/releases).
 
 2. Connect your watch to a PC, and copy-paste `celestial.prg` into the `GARMIN/APPS` directory.
 
