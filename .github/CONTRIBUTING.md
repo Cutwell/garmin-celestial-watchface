@@ -41,6 +41,8 @@ Scan through our [existing issues](https://github.com/Cutwell/garmin-celestial-w
 
 2. Follow the [Getting Started](https://developer.garmin.com/connect-iq/connect-iq-basics/getting-started/) page to install Monkey C and VSCode development extensions.
 
+! Note: Remember to set the position of the watch in the simulator (or by temporarily replacing `lat` and `lng` in `calculateSunriseSunset()` with dummy values). This is required since the simulator default `(180.00, 180.00)` isn't a valid position and breaks the functionality.
+
 3. Create a working branch and start with your changes!
 
 ### Commit your update

@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/Cutwell/readme-template/main/logo-64x64.svg" style="width:64px;padding-right:20px;margin-bottom:-8px;"> Garmin Celestial Watchface
+# <img src="https://raw.githubusercontent.com/Cutwell/garmin-celestial-watchface/main/celestial/resources/drawables/logo.png" style="width:65px;padding-right:20px;margin-bottom:-8px;"> Garmin Celestial Watchface
  A custom celestial-themed watchface for Garmin watches
 
 <!-- Find new badges at https://shields.io/badges -->

@@ -27,8 +27,8 @@ class celestialView extends WatchUi.WatchFace {
   function calculateSunriseSunset() {
     // Get Latitude/Longitude and current date
     var pos = Position.getInfo().position.toDegrees();
-    var lat = 51.509865; //pos[0];
-    var lng = -0.118092; //pos[1];
+    var lat = pos[0];
+    var lng = pos[1];
     System.println("Lat " + lat);
     System.println("Long " + lng);
     var elevation = 0;
