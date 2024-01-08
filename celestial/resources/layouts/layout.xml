@@ -1,7 +1,2 @@
 <layout id="WatchFace">
-    <label id="TopLabel" x="center" y="center" font="Graphics.FONT_LARGE"
-        justification="Graphics.TEXT_JUSTIFY_CENTER" color="Graphics.COLOR_RED"></label>
-
-    <label id="BottomLabel" x="center" y="center" font="Graphics.FONT_LARGE"
-        justification="Graphics.TEXT_JUSTIFY_CENTER" color="Graphics.COLOR_WHITE"></label>
 </layout>

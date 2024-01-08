@@ -38,9 +38,7 @@ class celestialView extends WatchUi.WatchFace {
   }
 
   function fmod(x, y) {
-    var quotient = x / y;
-    var floorQuotient = Math.floor(quotient);
-    return x - floorQuotient * y;
+    return x - Math.floor(x / y) * y;
   }
 
   function calculateSunriseSunset() {
@@ -48,18 +46,18 @@ class celestialView extends WatchUi.WatchFace {
     var pos = Position.getInfo().position.toDegrees();
     var lat = pos[0];
     var lng = pos[1];
-    System.println("Lat " + lat);
-    System.println("Long " + lng);
     var elevation = 0;
     var timestamp = Time.now().value(); // time since epoch
 
-    var julian_date = timestamp / 86400.0 + 2440587.5;
-
-    var julian_day = Math.ceil(
-      julian_date - (2451545.0 + 0.0009) + 69.184 / 86400.0
-    );
-
-    var mean_solar_time = julian_day + 0.0009 - lng / 360.0;
+    var mean_solar_time =
+      Math.ceil(
+        timestamp / 86400.0 +
+          2440587.5 -
+          (2451545.0 + 0.0009) +
+          69.184 / 86400.0
+      ) +
+      0.0009 -
+      lng / 360.0;
 
     var solar_mean_anomaly_degrees = fmod(
       357.5291 + 0.98560028 * mean_solar_time,
@@ -68,17 +66,17 @@ class celestialView extends WatchUi.WatchFace {
 
     var solar_mean_anomaly_radians = Math.toRadians(solar_mean_anomaly_degrees);
 
-    var center_degrees =
-      1.9148 * Math.sin(solar_mean_anomaly_radians) +
-      0.02 * Math.sin(2 * solar_mean_anomaly_radians) +
-      0.0003 * Math.sin(3 * solar_mean_anomaly_radians);
-
-    var ecliptic_longitude_degrees = fmod(
-      solar_mean_anomaly_degrees + center_degrees + 180.0 + 102.9372,
-      360
+    var ecliptic_longitude_radians = Math.toRadians(
+      fmod(
+        solar_mean_anomaly_degrees +
+          (1.9148 * Math.sin(solar_mean_anomaly_radians) +
+            0.02 * Math.sin(2 * solar_mean_anomaly_radians) +
+            0.0003 * Math.sin(3 * solar_mean_anomaly_radians)) +
+          180.0 +
+          102.9372,
+        360
+      )
     );
-
-    var ecliptic_longitude_radians = Math.toRadians(ecliptic_longitude_degrees);
 
     var julian_date_solar_transit =
       2451545.0 +
@@ -89,36 +87,33 @@ class celestialView extends WatchUi.WatchFace {
     var sin_sun_declination =
       Math.sin(ecliptic_longitude_radians) * Math.sin(Math.toRadians(23.4397));
 
-    var cos_sun_declination = Math.cos(Math.asin(sin_sun_declination));
+    var hour_angle_degrees = Math.toDegrees(
+      Math.acos(
+        (Math.sin(
+          Math.toRadians(-0.833 - (2.076 * Math.sqrt(elevation)) / 60.0)
+        ) -
+          Math.sin(Math.toRadians(lat)) * sin_sun_declination) /
+          (Math.cos(Math.toRadians(lat)) *
+            Math.cos(Math.asin(sin_sun_declination)))
+      )
+    );
 
-    var cos_hour_angle =
-      (Math.sin(
-        Math.toRadians(-0.833 - (2.076 * Math.sqrt(elevation)) / 60.0)
-      ) -
-        Math.sin(Math.toRadians(lat)) * sin_sun_declination) /
-      (Math.cos(Math.toRadians(lat)) * cos_sun_declination);
-
-    var hour_angle_radians = Math.acos(cos_hour_angle);
-
-    var hour_angle_degrees = Math.toDegrees(hour_angle_radians);
-
-    var julian_rise = julian_date_solar_transit - hour_angle_degrees / 360;
-    var julian_set = julian_date_solar_transit + hour_angle_degrees / 360;
-
-    var sunriseTimestamp = (julian_rise - 2440587.5) * 86400;
-    var sunsetTimestamp = (julian_set - 2440587.5) * 86400;
+    var sunriseTimestamp =
+      (julian_date_solar_transit - hour_angle_degrees / 360 - 2440587.5) *
+      86400;
+    var sunsetTimestamp =
+      (julian_date_solar_transit + hour_angle_degrees / 360 - 2440587.5) *
+      86400;
     var day_length = hour_angle_degrees / (180 / 24);
 
-    var sunriseMoment = new Time.Moment(sunriseTimestamp.toNumber());
-    var sunsetMoment = new Time.Moment(sunsetTimestamp.toNumber());
-
-    var sunriseTime = Time.Gregorian.info(sunriseMoment, Time.FORMAT_SHORT);
-    var sunsetTime = Time.Gregorian.info(sunsetMoment, Time.FORMAT_SHORT);
-
-    System.println("Sunrise " + sunriseTime.hour + ":" + sunriseTime.min);
-    System.println("Sunset " + sunsetTime.hour + ":" + sunsetTime.min);
-    System.println("Day Length " + day_length);
-    System.println("---------");
+    var sunriseTime = Time.Gregorian.info(
+      new Time.Moment(sunriseTimestamp.toNumber()),
+      Time.FORMAT_SHORT
+    );
+    var sunsetTime = Time.Gregorian.info(
+      new Time.Moment(sunsetTimestamp.toNumber()),
+      Time.FORMAT_SHORT
+    );
 
     return {
       "sunrise" => sunriseTime,
@@ -129,15 +124,14 @@ class celestialView extends WatchUi.WatchFace {
 
   function updateTwilight() {
     var sunTimes = calculateSunriseSunset() as Dictionary;
-
-    var sunriseTime = sunTimes["sunrise"];
-    var sunsetTime = sunTimes["sunset"];
-
-    sunriseMinutes = sunriseTime.hour * 60 + sunriseTime.min;
-    sunsetMinutes = sunsetTime.hour * 60 + sunsetTime.min;
-
-    sunriseMinutes = sunriseMinutes.toFloat();
-    sunsetMinutes = sunsetMinutes.toFloat();
+    sunriseMinutes = (
+      sunTimes["sunrise"].hour * 60 +
+      sunTimes["sunrise"].min
+    ).toFloat();
+    sunsetMinutes = (
+      sunTimes["sunset"].hour * 60 +
+      sunTimes["sunset"].min
+    ).toFloat();
   }
 
   // Load your resources here
@@ -161,17 +155,16 @@ class celestialView extends WatchUi.WatchFace {
 
     // draw celestial icon
     var celestialEvent = getSolarBody() as Dictionary;
-    var celestialImg = celestialEvent["solarBody"];
     var pos =
       calculateApproxCelestialArc(
         screenWidth,
         screenHeight,
-        celestialImg.getWidth(),
-        celestialImg.getHeight(),
+        celestialEvent["solarBody"].getWidth(),
+        celestialEvent["solarBody"].getHeight(),
         celestialEvent["%"]
       ) as Array;
     dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-    dc.drawBitmap(pos[0], pos[1], celestialImg);
+    dc.drawBitmap(pos[0], pos[1], celestialEvent["solarBody"]);
 
     // Draw current date at top of page
     var today = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
@@ -211,7 +204,7 @@ class celestialView extends WatchUi.WatchFace {
     dc.drawText(
       screenWidth / 2 +
         (batteryImg.getWidth() +
-          dc.getTextWidthInPixels(batteryString, Graphics.FONT_SMALL)*0.75) /
+          dc.getTextWidthInPixels(batteryString, Graphics.FONT_SMALL) * 0.75) /
           2,
       screenHeight * 0.9 - dc.getFontHeight(Graphics.FONT_SMALL),
       Graphics.FONT_SMALL,
@@ -221,7 +214,7 @@ class celestialView extends WatchUi.WatchFace {
     dc.drawBitmap(
       screenWidth / 2 -
         (batteryImg.getWidth() +
-          dc.getTextWidthInPixels(batteryString, Graphics.FONT_SMALL)*0.75) /
+          dc.getTextWidthInPixels(batteryString, Graphics.FONT_SMALL) * 0.75) /
           2,
       screenHeight * 0.9 - dc.getFontHeight(Graphics.FONT_SMALL),
       batteryImg
@@ -230,37 +223,31 @@ class celestialView extends WatchUi.WatchFace {
 
   function getSolarBody() {
     var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-    var nowMinutes = now.hour * 60 + now.min;
-    nowMinutes = nowMinutes.toFloat();
+    var nowMinutes = (now.hour * 60 + now.min).toFloat();
 
     if (nowMinutes >= sunriseMinutes && nowMinutes <= sunsetMinutes) {
       // is day
-      var day_percentage =
-        ((nowMinutes - sunriseMinutes) / (sunsetMinutes - sunriseMinutes)) *
-        100;
-
       return {
         "solarBody" => Sun,
-        "%" => day_percentage,
+        "%" => ((nowMinutes - sunriseMinutes) /
+          (sunsetMinutes - sunriseMinutes)) *
+        100,
       };
     } else if (nowMinutes < sunriseMinutes) {
       // is night (midnight -> now -> sunrise)
       // night % is between 50 and 100%
-      var night_percentage = ((nowMinutes / sunriseMinutes) * 100) / 2 + 50;
-
       return {
         "solarBody" => Moon,
-        "%" => night_percentage,
+        "%" => ((nowMinutes / sunriseMinutes) * 100) / 2 + 50,
       };
     } else if (nowMinutes > sunsetMinutes) {
       // is night (sunset -> now -> midnight)
       // night % is between 0 and 50%
-      var night_percentage =
-        (((nowMinutes - sunsetMinutes) / (24 * 60 - sunsetMinutes)) * 100) / 2;
-
       return {
         "solarBody" => Moon,
-        "%" => night_percentage,
+        "%" => (((nowMinutes - sunsetMinutes) / (24 * 60 - sunsetMinutes)) *
+          100) /
+        2,
       };
     } else {
       return {
@@ -310,26 +297,23 @@ class celestialView extends WatchUi.WatchFace {
       BatteryChargingFlag = false;
     }
 
-    var icon;
+    PrevBatteryPercentage = curr_percentage;
     if (curr_percentage == 100) {
       // show battery full if 100% (even if charging)
-      icon = BatteryFull;
+      return BatteryFull;
     } else if (BatteryChargingFlag) {
       // show charging if battery level is rising
-      icon = BatteryCharging;
+      return BatteryCharging;
     } else if (curr_percentage < 10) {
       // show empty if < 10%
-      icon = BatteryEmpty;
+      return BatteryEmpty;
     } else if (curr_percentage < 80) {
       // show half-charged if between 10% and 80%
-      icon = BatteryHalf;
+      return BatteryHalf;
     } else {
       // show full if > 80%
-      icon = BatteryFull;
+      return BatteryFull;
     }
-
-    PrevBatteryPercentage = curr_percentage;
-    return icon;
   }
 
   // Called when this View is removed from the screen. Save the
