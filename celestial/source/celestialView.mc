@@ -137,7 +137,7 @@ class celestialView extends WatchUi.WatchFace {
     var screenHeight = dc.getHeight();
 
     // draw white sky
-    dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
     dc.fillRectangle(0, 0, screenWidth, screenHeight / 2);
 
     // draw celestial icon
@@ -167,19 +167,29 @@ class celestialView extends WatchUi.WatchFace {
     dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
     dc.fillRectangle(0, screenHeight / 2, screenWidth, screenHeight / 2);
 
-    // Get and show the current time
-    var today = Time.Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-    var timeString = Lang.format("$1$:$2$:$3$", [
+    // Get and show the current time, date and battery
+    var today = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+    var timeString = Lang.format("$1$:$2$", [
       today.hour,
-      today.min.format("%02d"),
-      today.sec.format("%02d"),
+      today.min.format("%02d")
     ]);
-    dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+    var dateString = Lang.format("$1$/$2$", [
+      today.day.format("%02d"),
+      today.month.format("%02d")
+    ]);
+    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
     dc.drawText(
       screenWidth / 2,
       screenHeight * 0.75 - dc.getFontHeight(Graphics.FONT_NUMBER_MILD),
       Graphics.FONT_NUMBER_MILD,
       timeString,
+      Graphics.TEXT_JUSTIFY_CENTER
+    );
+    dc.drawText(
+      screenWidth / 2,
+      screenHeight * 0.95 - dc.getFontHeight(Graphics.FONT_NUMBER_MILD),
+      Graphics.FONT_MEDIUM,
+      dateString,
       Graphics.TEXT_JUSTIFY_CENTER
     );
   }
