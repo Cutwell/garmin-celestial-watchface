@@ -192,7 +192,7 @@ class celestialView extends WatchUi.WatchFace {
 
     // Draw current time
     var timeString = Lang.format("$1$:$2$", [
-      today.hour,
+      today.hour.format("%02d"),
       today.min.format("%02d"),
     ]);
     dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
