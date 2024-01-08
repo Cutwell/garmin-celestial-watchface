@@ -8,14 +8,33 @@ import Toybox.Time;
 class celestialView extends WatchUi.WatchFace {
   var sunriseMinutes;
   var sunsetMinutes;
-  var sunIcon;
-  var moonIcon;
+
+  // Drawables
+  var Sun;
+  var Moon;
+  var BatteryFull;
+  var BatteryHalf;
+  var BatteryEmpty;
+  var BatteryCharging;
+
+  // Hack to track battery % over time and detect charging
+  // Since the 1.4.0 target API doesn't support the .charging System Stat attribute
+  var PrevBatteryPercentage;
+  var BatteryChargingFlag;
 
   function initialize() {
     WatchFace.initialize();
 
-    sunIcon = WatchUi.loadResource(Rez.Drawables.Sun);
-    moonIcon = WatchUi.loadResource(Rez.Drawables.Moon);
+    // Load drawable resources
+    Sun = WatchUi.loadResource(Rez.Drawables.Sun);
+    Moon = WatchUi.loadResource(Rez.Drawables.Moon);
+    BatteryFull = WatchUi.loadResource(Rez.Drawables.BatteryFull);
+    BatteryHalf = WatchUi.loadResource(Rez.Drawables.BatteryHalf);
+    BatteryEmpty = WatchUi.loadResource(Rez.Drawables.BatteryEmpty);
+    BatteryCharging = WatchUi.loadResource(Rez.Drawables.BatteryCharging);
+
+    PrevBatteryPercentage = System.getSystemStats().battery;
+    BatteryChargingFlag = false;
   }
 
   function fmod(x, y) {
@@ -141,60 +160,75 @@ class celestialView extends WatchUi.WatchFace {
     dc.fillRectangle(0, 0, screenWidth, screenHeight / 2);
 
     // draw celestial icon
-    var celestialEvent = isDaytime() as Dictionary;
-
-    // DEBUG:
-    //System.println(  "isDay: " + celestialEvent["isDay"] + "\t(" + celestialEvent["%"] + "%)");
-
-    var celestialImg;
-    if (celestialEvent["isDay"]) {
-      celestialImg = sunIcon;
-    } else {
-      celestialImg = moonIcon;
-    }
-
-    var pos = calculateApproxCelestialArc(
-      screenWidth,
-      screenHeight,
-      celestialImg.getWidth(),
-      celestialImg.getHeight(),
-      celestialEvent["%"]
-    ) as Array;
+    var celestialEvent = getSolarBody() as Dictionary;
+    var celestialImg = celestialEvent["solarBody"];
+    var pos =
+      calculateApproxCelestialArc(
+        screenWidth,
+        screenHeight,
+        celestialImg.getWidth(),
+        celestialImg.getHeight(),
+        celestialEvent["%"]
+      ) as Array;
     dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
     dc.drawBitmap(pos[0], pos[1], celestialImg);
 
-    // draw black land
-    dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-    dc.fillRectangle(0, screenHeight / 2, screenWidth, screenHeight / 2);
-
-    // Get and show the current time, date and battery
+    // Draw current date at top of page
     var today = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-    var timeString = Lang.format("$1$:$2$", [
-      today.hour,
-      today.min.format("%02d")
-    ]);
     var dateString = Lang.format("$1$/$2$", [
       today.day.format("%02d"),
-      today.month.format("%02d")
+      today.month.format("%02d"),
     ]);
-    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
     dc.drawText(
       screenWidth / 2,
-      screenHeight * 0.75 - dc.getFontHeight(Graphics.FONT_NUMBER_MILD),
-      Graphics.FONT_NUMBER_MILD,
-      timeString,
-      Graphics.TEXT_JUSTIFY_CENTER
-    );
-    dc.drawText(
-      screenWidth / 2,
-      screenHeight * 0.95 - dc.getFontHeight(Graphics.FONT_NUMBER_MILD),
+      screenHeight * 0.15 - dc.getFontHeight(Graphics.FONT_MEDIUM),
       Graphics.FONT_MEDIUM,
       dateString,
       Graphics.TEXT_JUSTIFY_CENTER
     );
+
+    // Draw landscape
+    dc.fillRectangle(0, screenHeight / 2, screenWidth, screenHeight / 2);
+
+    // Draw current time
+    var timeString = Lang.format("$1$:$2$", [
+      today.hour,
+      today.min.format("%02d"),
+    ]);
+    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+    dc.drawText(
+      screenWidth / 2,
+      screenHeight * 0.7 - dc.getFontHeight(Graphics.FONT_NUMBER_MILD),
+      Graphics.FONT_NUMBER_MILD,
+      timeString,
+      Graphics.TEXT_JUSTIFY_CENTER
+    );
+
+    // Draw battery percentage and relevant icon
+    var systemStatsBattery = System.getSystemStats().battery;
+    var batteryString = Lang.format("$1$%", [systemStatsBattery.toNumber()]);
+    var batteryImg = getBatteryIcon(systemStatsBattery);
+    dc.drawText(
+      screenWidth / 2 +
+        (batteryImg.getWidth() +
+          dc.getTextWidthInPixels(batteryString, Graphics.FONT_SMALL)*0.75) /
+          2,
+      screenHeight * 0.9 - dc.getFontHeight(Graphics.FONT_SMALL),
+      Graphics.FONT_SMALL,
+      batteryString,
+      Graphics.TEXT_JUSTIFY_CENTER
+    );
+    dc.drawBitmap(
+      screenWidth / 2 -
+        (batteryImg.getWidth() +
+          dc.getTextWidthInPixels(batteryString, Graphics.FONT_SMALL)*0.75) /
+          2,
+      screenHeight * 0.9 - dc.getFontHeight(Graphics.FONT_SMALL),
+      batteryImg
+    );
   }
 
-  function isDaytime() {
+  function getSolarBody() {
     var now = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
     var nowMinutes = now.hour * 60 + now.min;
     nowMinutes = nowMinutes.toFloat();
@@ -206,7 +240,7 @@ class celestialView extends WatchUi.WatchFace {
         100;
 
       return {
-        "isDay" => true,
+        "solarBody" => Sun,
         "%" => day_percentage,
       };
     } else if (nowMinutes < sunriseMinutes) {
@@ -215,7 +249,7 @@ class celestialView extends WatchUi.WatchFace {
       var night_percentage = ((nowMinutes / sunriseMinutes) * 100) / 2 + 50;
 
       return {
-        "isDay" => false,
+        "solarBody" => Moon,
         "%" => night_percentage,
       };
     } else if (nowMinutes > sunsetMinutes) {
@@ -225,12 +259,12 @@ class celestialView extends WatchUi.WatchFace {
         (((nowMinutes - sunsetMinutes) / (24 * 60 - sunsetMinutes)) * 100) / 2;
 
       return {
-        "isDay" => false,
+        "solarBody" => Moon,
         "%" => night_percentage,
       };
     } else {
       return {
-        "isDay" => true,
+        "solarBody" => Sun,
         "%" => 0,
       };
     }
@@ -267,6 +301,35 @@ class celestialView extends WatchUi.WatchFace {
 
     // else, return the last index
     return posBucket[posBucket.size() - 1];
+  }
+
+  function getBatteryIcon(curr_percentage) {
+    if (curr_percentage > PrevBatteryPercentage) {
+      BatteryChargingFlag = true;
+    } else if (curr_percentage < PrevBatteryPercentage) {
+      BatteryChargingFlag = false;
+    }
+
+    var icon;
+    if (curr_percentage == 100) {
+      // show battery full if 100% (even if charging)
+      icon = BatteryFull;
+    } else if (BatteryChargingFlag) {
+      // show charging if battery level is rising
+      icon = BatteryCharging;
+    } else if (curr_percentage < 10) {
+      // show empty if < 10%
+      icon = BatteryEmpty;
+    } else if (curr_percentage < 80) {
+      // show half-charged if between 10% and 80%
+      icon = BatteryHalf;
+    } else {
+      // show full if > 80%
+      icon = BatteryFull;
+    }
+
+    PrevBatteryPercentage = curr_percentage;
+    return icon;
   }
 
   // Called when this View is removed from the screen. Save the

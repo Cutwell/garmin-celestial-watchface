@@ -2,4 +2,8 @@
 	<bitmap id="LauncherIcon" filename="logo.png" />
 	<bitmap id="Sun" filename="sun_full.png" />
 	<bitmap id="Moon" filename="moon_full.png" />
+	<bitmap id="BatteryFull" filename="battery_full.png" />
+	<bitmap id="BatteryHalf" filename="battery_half.png" />
+	<bitmap id="BatteryEmpty" filename="battery_empty.png" />
+	<bitmap id="BatteryCharging" filename="battery_charging.png" />
 </drawables>
