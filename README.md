@@ -3,6 +3,8 @@
 
 <!-- Find new badges at https://shields.io/badges -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Garmin Connect IQ: Find on the watchface store](https://img.shields.io/badge/Garmin%20Connect%20IQ-Find%20on%20the%20watchface%20store-white?logoColor=11a9ed&labelColor=11a9ed&color=white)
+](https://apps.garmin.com/en-US/apps/a71ddc4f-5821-4068-ad1d-9137ca4d9009)
 
 - Turns your watchface into a day/night cycle.
 - Uses your current position and predicts sunset / sunrise times.
@@ -13,19 +15,26 @@ https://github.com/Cutwell/garmin-celestial-watchface/assets/22395357/16e7fd4f-9
 
 ### For supported watches
 
-**Forerunner 45:**
+Download a pre-built binary for supported devices:
 
-1. Install the latest release tagged `fr-45-vX.X` from the [release page](https://github.com/Cutwell/garmin-celestial-watchface/releases).
+|Supported Device|
+|:---:|
+|Forerunner 45|
+|Forerunner 45+|
 
-2. Connect your watch to a PC, and copy-paste `celestial.prg` into the `GARMIN/APPS` directory.
+1. Download the latest release from the [Garmin Connect IQ watchface store](https://apps.garmin.com/en-US/apps/a71ddc4f-5821-4068-ad1d-9137ca4d9009).
+
+2. Connect your watch to a PC, and copy-paste `celestial.prg` into the `GARMIN/Apps` directory.
 
 ### For unsupported watches
+
+Compile your own binary, targetted for your device:
 
 1. Clone this repository locally.
 
 2. Follow the [Getting Started](https://developer.garmin.com/connect-iq/connect-iq-basics/getting-started/) page to install Monkey C and VSCode development extensions.
 
-2. Follow the instructions for building + side-loading a watchface from the [Garmin website](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#sideloadinganapp).
+4. Follow the instructions for building + side-loading a watchface from the [Garmin website](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#sideloadinganapp).
 
 ## Contributing
 
